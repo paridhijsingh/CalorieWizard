@@ -59,6 +59,22 @@ enum AppDestination: String, CaseIterable, Identifiable, Hashable {
         case .profile: [BrandTheme.plumSoft, BrandTheme.plumDeep]
         }
     }
+
+    var index: Int {
+        Self.allCases.firstIndex(of: self) ?? 0
+    }
+
+    var previous: AppDestination? {
+        let i = index
+        guard i > 0 else { return nil }
+        return Self.allCases[i - 1]
+    }
+
+    var next: AppDestination? {
+        let i = index
+        guard i < Self.allCases.count - 1 else { return nil }
+        return Self.allCases[i + 1]
+    }
 }
 
 struct AppHubMenuView: View {
@@ -90,17 +106,23 @@ struct AppHubMenuView: View {
             .blur(radius: selectedDestination == nil ? 0 : 2)
             .allowsHitTesting(selectedDestination == nil)
 
-            if let destination = selectedDestination {
-                DestinationContainer(destination: destination) {
-                    withAnimation(BrandTransitions.cover) {
-                        selectedDestination = nil
+            if selectedDestination != nil {
+                DestinationPager(
+                    selection: Binding(
+                        get: { selectedDestination ?? .today },
+                        set: { selectedDestination = $0 }
+                    ),
+                    onBackToMenu: {
+                        withAnimation(BrandTransitions.cover) {
+                            selectedDestination = nil
+                        }
                     }
-                }
+                )
                 .transition(BrandTransitions.destinationCover)
                 .zIndex(2)
             }
         }
-        .animation(BrandTransitions.cover, value: selectedDestination)
+        .animation(BrandTransitions.cover, value: selectedDestination == nil)
         .calorieLimitMonitoring()
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.86)) {
@@ -251,7 +273,7 @@ struct AppHubMenuView: View {
     }
 
     private var quickHint: some View {
-        Text("Open any section, then tap Menu in the corner to return here.")
+        Text("Open any section, then swipe or use the arrows to move between features. Tap Menu to return here.")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -266,27 +288,43 @@ struct AppHubMenuView: View {
     }
 }
 
-private struct DestinationContainer: View {
-    let destination: AppDestination
+private struct DestinationPager: View {
+    @Binding var selection: AppDestination
     var onBackToMenu: () -> Void
+
     @Environment(\.colorScheme) private var colorScheme
     @State private var appeared = false
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Group {
-                switch destination {
-                case .today: DashboardView()
-                case .analyze: FoodScannerView()
-                case .recipes: RecipeGeneratorView()
-                case .water: WaterTrackerView()
-                case .history: HistoryView()
-                case .profile: ProfileView()
+        ZStack(alignment: .top) {
+            Color(.systemBackground)
+                .ignoresSafeArea()
+
+            TabView(selection: $selection) {
+                ForEach(AppDestination.allCases) { destination in
+                    destinationRoot(destination)
+                        .tag(destination)
                 }
             }
-            .opacity(appeared ? 1 : 0)
-            .offset(x: appeared ? 0 : 24)
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(BrandTransitions.cover, value: selection)
 
+            VStack(spacing: 0) {
+                topChrome
+                Spacer()
+                bottomChrome
+            }
+            .opacity(appeared ? 1 : 0)
+        }
+        .onAppear {
+            withAnimation(BrandTransitions.cover) {
+                appeared = true
+            }
+        }
+    }
+
+    private var topChrome: some View {
+        HStack(spacing: 12) {
             Button(action: onBackToMenu) {
                 Label("Menu", systemImage: "square.grid.2x2.fill")
                     .font(.subheadline.weight(.semibold))
@@ -298,19 +336,130 @@ private struct DestinationContainer: View {
                         Capsule()
                             .stroke(BrandTheme.plum.opacity(0.28), lineWidth: 1)
                     }
-                    .shadow(color: BrandTheme.plum.opacity(0.16), radius: 10, y: 4)
             }
             .buttonStyle(.plain)
-            .padding(.top, 8)
-            .padding(.trailing, 16)
-            .opacity(appeared ? 1 : 0)
-            .scaleEffect(appeared ? 1 : 0.9)
-        }
-        .background(Color(.systemBackground).ignoresSafeArea())
-        .onAppear {
-            withAnimation(BrandTransitions.cover) {
-                appeared = true
+
+            Spacer(minLength: 8)
+
+            HStack(spacing: 8) {
+                Image(systemName: selection.symbol)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.white)
+                    .padding(8)
+                    .background(
+                        LinearGradient(colors: selection.colors, startPoint: .topLeading, endPoint: .bottomTrailing),
+                        in: Circle()
+                    )
+
+                Text(selection.title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial, in: Capsule())
+            .overlay {
+                Capsule()
+                    .stroke(BrandTheme.plum.opacity(0.2), lineWidth: 1)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+
+    private var bottomChrome: some View {
+        VStack(spacing: 12) {
+            pageDots
+
+            HStack(spacing: 18) {
+                navArrow(
+                    systemName: "chevron.left",
+                    enabled: selection.previous != nil
+                ) {
+                    guard let previous = selection.previous else { return }
+                    withAnimation(BrandTransitions.cover) {
+                        selection = previous
+                    }
+                }
+
+                Text("\(selection.index + 1) / \(AppDestination.allCases.count)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                    .frame(minWidth: 48)
+
+                navArrow(
+                    systemName: "chevron.right",
+                    enabled: selection.next != nil
+                ) {
+                    guard let next = selection.next else { return }
+                    withAnimation(BrandTransitions.cover) {
+                        selection = next
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial)
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(BrandTheme.plum.opacity(0.12))
+                .frame(height: 1)
+        }
+    }
+
+    private var pageDots: some View {
+        HStack(spacing: 7) {
+            ForEach(AppDestination.allCases) { destination in
+                Capsule()
+                    .fill(destination == selection ? BrandTheme.plum : BrandTheme.plum.opacity(0.25))
+                    .frame(width: destination == selection ? 18 : 7, height: 7)
+                    .animation(BrandTransitions.quick, value: selection)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func navArrow(systemName: String, enabled: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.body.weight(.bold))
+                .foregroundStyle(enabled ? .white : .white.opacity(0.45))
+                .frame(width: 48, height: 48)
+                .background(
+                    enabled
+                        ? AnyShapeStyle(BrandTheme.primaryGradient(for: colorScheme))
+                        : AnyShapeStyle(BrandTheme.plum.opacity(0.25)),
+                    in: Circle()
+                )
+                .shadow(color: BrandTheme.plum.opacity(enabled ? 0.28 : 0), radius: 10, y: 4)
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .accessibilityLabel(systemName.contains("left") ? "Previous section" : "Next section")
+    }
+
+    @ViewBuilder
+    private func destinationRoot(_ destination: AppDestination) -> some View {
+        Group {
+            switch destination {
+            case .today: DashboardView()
+            case .analyze: FoodScannerView()
+            case .recipes: RecipeGeneratorView()
+            case .water: WaterTrackerView()
+            case .history: HistoryView()
+            case .profile: ProfileView()
+            }
+        }
+        // Leave room for top title chrome + bottom arrows.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            Color.clear.frame(height: 56)
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Color.clear.frame(height: 108)
         }
     }
 }

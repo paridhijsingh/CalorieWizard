@@ -15,6 +15,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 - Soft plum brand theme (`BrandTheme`) shared by landing + hub menu so UI matches the logo
 - Landing uses the logo as a full-bleed background (not a floating card)
 - Aesthetic spring transitions: landing → hub, menu → feature screens (slide + soft scale)
+- Swipe between feature screens like flashcards, with previous/next arrows and page dots
 - Tagline: **Snap, Track, and Transform**
 - **Get Started** → email/password auth (Supabase), then profile or hub
 - **Aesthetic Explore menu hub** after auth (expand/collapse destinations)
