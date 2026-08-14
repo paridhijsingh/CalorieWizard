@@ -165,8 +165,35 @@ struct RecipeGeneratorView: View {
         )
         modelContext.insert(favorite)
         try? modelContext.save()
+        let syncID = favorite.id
+        let syncTitle = favorite.title
+        let syncBody = favorite.bodyText
+        let syncCalories = favorite.calories
+        let syncProtein = favorite.proteinG
+        let syncCarbs = favorite.carbsG
+        let syncFats = favorite.fatsG
+        let syncMealType = favorite.mealType
+        let syncDiet = favorite.dietaryPreference
+        let syncIngredients = favorite.ingredients
+        let syncCreated = favorite.createdAt
         Task {
-            try? await SupabaseSyncService.upsertFavorite(favorite)
+            do {
+                try await SupabaseSyncService.upsertFavorite(
+                    id: syncID,
+                    title: syncTitle,
+                    bodyText: syncBody,
+                    calories: syncCalories,
+                    proteinG: syncProtein,
+                    carbsG: syncCarbs,
+                    fatsG: syncFats,
+                    mealType: syncMealType,
+                    dietaryPreference: syncDiet,
+                    ingredients: syncIngredients,
+                    createdAt: syncCreated
+                )
+            } catch {
+                print("Supabase favorite sync failed: \(error.localizedDescription)")
+            }
         }
         showToast("Saved to Favorites")
         selectedTab = 1
@@ -185,8 +212,33 @@ struct RecipeGeneratorView: View {
         )
         modelContext.insert(entry)
         try? modelContext.save()
+        let syncID = entry.id
+        let syncFood = entry.foodName
+        let syncCalories = entry.calories
+        let syncProtein = entry.proteinG
+        let syncCarbs = entry.carbsG
+        let syncFats = entry.fatsG
+        let syncInsights = entry.insights
+        let syncCreated = entry.createdAt
+        let syncImage = entry.imageFileName
+        let syncKind = entry.mealKind.rawValue
         Task {
-            try? await SupabaseSyncService.upsertMeal(entry)
+            do {
+                try await SupabaseSyncService.upsertMeal(
+                    id: syncID,
+                    foodName: syncFood,
+                    calories: syncCalories,
+                    proteinG: syncProtein,
+                    carbsG: syncCarbs,
+                    fatsG: syncFats,
+                    insights: syncInsights,
+                    createdAt: syncCreated,
+                    imageFileName: syncImage,
+                    mealKind: syncKind
+                )
+            } catch {
+                print("Supabase meal sync failed: \(error.localizedDescription)")
+            }
         }
         showToast("Logged to Today’s tracker")
     }

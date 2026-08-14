@@ -398,8 +398,21 @@ struct WaterTrackerView: View {
         let entry = WaterEntry(amountMl: amount)
         modelContext.insert(entry)
         try? modelContext.save()
+        let syncID = entry.id
+        let syncAmount = entry.amountMl
+        let syncCreated = entry.createdAt
+        let syncNote = entry.note
         Task {
-            try? await SupabaseSyncService.upsertWater(entry)
+            do {
+                try await SupabaseSyncService.upsertWater(
+                    id: syncID,
+                    amountMl: syncAmount,
+                    createdAt: syncCreated,
+                    note: syncNote
+                )
+            } catch {
+                print("Supabase water sync failed: \(error.localizedDescription)")
+            }
         }
     }
 

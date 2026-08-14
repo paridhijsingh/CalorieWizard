@@ -110,6 +110,30 @@ struct FavoriteRecord: Codable {
 enum SupabaseSyncService {
     private static var client: SupabaseClient { SupabaseManager.client }
 
+    private static func requireUserId() async throws -> UUID {
+        do {
+            return try await client.auth.session.user.id
+        } catch {
+            throw AuthServiceError.notSignedIn
+        }
+    }
+
+    /// Creates a profile row right after auth so Table Editor isn't empty.
+    static func ensureProfileStub(email: String) async throws {
+        let defaults = UserDefaults.standard
+        try await upsertProfile(
+            firstName: defaults.string(forKey: UserProfileKey.firstName) ?? "",
+            lastName: defaults.string(forKey: UserProfileKey.lastName) ?? "",
+            email: email,
+            phone: defaults.string(forKey: UserProfileKey.phone) ?? "",
+            dailyCalorieGoal: defaults.object(forKey: UserProfileKey.dailyCalorieGoal) as? Double ?? 2000,
+            dailyProteinGoal: defaults.object(forKey: UserProfileKey.dailyProteinGoal) as? Double ?? 150,
+            dailyCarbsGoal: defaults.object(forKey: UserProfileKey.dailyCarbsGoal) as? Double ?? 200,
+            dailyFatGoal: defaults.object(forKey: UserProfileKey.dailyFatGoal) as? Double ?? 65,
+            dailyWaterGoalMl: defaults.object(forKey: UserProfileKey.dailyWaterGoalMl) as? Double ?? 2000
+        )
+    }
+
     static func upsertProfile(
         firstName: String,
         lastName: String,
@@ -121,7 +145,7 @@ enum SupabaseSyncService {
         dailyFatGoal: Double,
         dailyWaterGoalMl: Double
     ) async throws {
-        guard let uid = try? await client.auth.session.user.id else { return }
+        let uid = try await requireUserId()
         let record = ProfileRecord(
             id: uid,
             firstName: firstName,
@@ -138,7 +162,7 @@ enum SupabaseSyncService {
     }
 
     static func fetchProfile() async throws -> ProfileRecord? {
-        guard let uid = try? await client.auth.session.user.id else { return nil }
+        let uid = try await requireUserId()
         let rows: [ProfileRecord] = try await client
             .from("profiles")
             .select()
@@ -149,51 +173,79 @@ enum SupabaseSyncService {
         return rows.first
     }
 
-    static func upsertMeal(_ meal: MealEntry) async throws {
-        guard let uid = try? await client.auth.session.user.id else { return }
+    static func upsertMeal(
+        id: UUID,
+        foodName: String,
+        calories: Double,
+        proteinG: Double,
+        carbsG: Double,
+        fatsG: Double,
+        insights: String,
+        createdAt: Date,
+        imageFileName: String,
+        mealKind: String
+    ) async throws {
+        let uid = try await requireUserId()
         let record = MealRecord(
-            id: meal.id,
+            id: id,
             userId: uid,
-            foodName: meal.foodName,
-            calories: meal.calories,
-            proteinG: meal.proteinG,
-            carbsG: meal.carbsG,
-            fatsG: meal.fatsG,
-            insights: meal.insights,
-            createdAt: meal.createdAt,
-            imageFileName: meal.imageFileName,
-            mealKind: meal.mealKind.rawValue
+            foodName: foodName,
+            calories: calories,
+            proteinG: proteinG,
+            carbsG: carbsG,
+            fatsG: fatsG,
+            insights: insights,
+            createdAt: createdAt,
+            imageFileName: imageFileName,
+            mealKind: mealKind
         )
         try await client.from("meals").upsert(record).execute()
     }
 
-    static func upsertWater(_ entry: WaterEntry) async throws {
-        guard let uid = try? await client.auth.session.user.id else { return }
+    static func upsertWater(
+        id: UUID,
+        amountMl: Double,
+        createdAt: Date,
+        note: String
+    ) async throws {
+        let uid = try await requireUserId()
         let record = WaterRecord(
-            id: entry.id,
+            id: id,
             userId: uid,
-            amountMl: entry.amountMl,
-            createdAt: entry.createdAt,
-            note: entry.note
+            amountMl: amountMl,
+            createdAt: createdAt,
+            note: note
         )
         try await client.from("water_logs").upsert(record).execute()
     }
 
-    static func upsertFavorite(_ recipe: FavoriteRecipe) async throws {
-        guard let uid = try? await client.auth.session.user.id else { return }
+    static func upsertFavorite(
+        id: UUID,
+        title: String,
+        bodyText: String,
+        calories: Double,
+        proteinG: Double,
+        carbsG: Double,
+        fatsG: Double,
+        mealType: String,
+        dietaryPreference: String,
+        ingredients: String,
+        createdAt: Date
+    ) async throws {
+        let uid = try await requireUserId()
         let record = FavoriteRecord(
-            id: recipe.id,
+            id: id,
             userId: uid,
-            title: recipe.title,
-            bodyText: recipe.bodyText,
-            calories: recipe.calories,
-            proteinG: recipe.proteinG,
-            carbsG: recipe.carbsG,
-            fatsG: recipe.fatsG,
-            mealType: recipe.mealType,
-            dietaryPreference: recipe.dietaryPreference,
-            ingredients: recipe.ingredients,
-            createdAt: recipe.createdAt
+            title: title,
+            bodyText: bodyText,
+            calories: calories,
+            proteinG: proteinG,
+            carbsG: carbsG,
+            fatsG: fatsG,
+            mealType: mealType,
+            dietaryPreference: dietaryPreference,
+            ingredients: ingredients,
+            createdAt: createdAt
         )
         try await client.from("favorite_recipes").upsert(record).execute()
     }

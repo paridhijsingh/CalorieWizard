@@ -57,8 +57,16 @@ final class AuthManager {
         guard isConfigured else { throw AuthServiceError.notConfigured }
         lastError = nil
         let response = try await SupabaseManager.client.auth.signUp(email: email, password: password)
-        userId = response.user.id.uuidString
-        self.email = response.user.email
+
+        if let session = response.session {
+            apply(session: session)
+        } else {
+            // User row can exist without a session (e.g. confirm-email). Sign in to get a JWT for sync.
+            let session = try await SupabaseManager.client.auth.signIn(email: email, password: password)
+            apply(session: session)
+        }
+
+        try await SupabaseSyncService.ensureProfileStub(email: email)
     }
 
     func signIn(email: String, password: String) async throws {
@@ -66,8 +74,8 @@ final class AuthManager {
         guard isConfigured else { throw AuthServiceError.notConfigured }
         lastError = nil
         let session = try await SupabaseManager.client.auth.signIn(email: email, password: password)
-        userId = session.user.id.uuidString
-        self.email = session.user.email
+        apply(session: session)
+        try await SupabaseSyncService.ensureProfileStub(email: email)
     }
 
     func signOut() async throws {
@@ -75,15 +83,23 @@ final class AuthManager {
         userId = nil
         email = nil
     }
+
+    private func apply(session: Session) {
+        userId = session.user.id.uuidString
+        email = session.user.email
+    }
 }
 
 enum AuthServiceError: LocalizedError {
     case notConfigured
+    case notSignedIn
 
     var errorDescription: String? {
         switch self {
         case .notConfigured:
             return "Supabase is not configured. Add SUPABASE_URL and SUPABASE_ANON_KEY first."
+        case .notSignedIn:
+            return "You need an active session before syncing. Sign in again."
         }
     }
 }

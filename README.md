@@ -184,6 +184,7 @@ Keep this section updated as features land.
 - [x] Animated landing + Get Started
 - [x] Supabase email auth for multi-user / family devices
 - [x] Cloud sync for profile, meals, water, and favorite recipes (RLS per user)
+- [x] Profile row created on sign-in/sign-up so Table Editor is populated immediately
 - [x] Profile save / skip for returning & new users
 - [x] Daily calorie dashboard (SwiftData)
 - [x] Gemini meal photo analysis + editable macros

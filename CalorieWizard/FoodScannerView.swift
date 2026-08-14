@@ -263,8 +263,33 @@ struct FoodScannerView: View {
         }
 
         try? modelContext.save()
+        let syncID = mealToSync.id
+        let syncFood = mealToSync.foodName
+        let syncCalories = mealToSync.calories
+        let syncProtein = mealToSync.proteinG
+        let syncCarbs = mealToSync.carbsG
+        let syncFats = mealToSync.fatsG
+        let syncInsights = mealToSync.insights
+        let syncCreated = mealToSync.createdAt
+        let syncImage = mealToSync.imageFileName
+        let syncKind = mealToSync.mealKind.rawValue
         Task {
-            try? await SupabaseSyncService.upsertMeal(mealToSync)
+            do {
+                try await SupabaseSyncService.upsertMeal(
+                    id: syncID,
+                    foodName: syncFood,
+                    calories: syncCalories,
+                    proteinG: syncProtein,
+                    carbsG: syncCarbs,
+                    fatsG: syncFats,
+                    insights: syncInsights,
+                    createdAt: syncCreated,
+                    imageFileName: syncImage,
+                    mealKind: syncKind
+                )
+            } catch {
+                print("Supabase meal sync failed: \(error.localizedDescription)")
+            }
         }
     }
 
