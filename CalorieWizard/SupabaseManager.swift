@@ -18,6 +18,8 @@ enum SupabaseConfig {
     static var isConfigured: Bool {
         guard let url = URL(string: urlString),
               url.scheme == "https",
+              url.host != nil,
+              !(url.host ?? "").isEmpty,
               !anonKey.isEmpty,
               anonKey != "your_supabase_anon_key_here" else {
             return false
@@ -43,7 +45,13 @@ enum SupabaseConfig {
 
 enum SupabaseManager {
     static let client: SupabaseClient = {
-        let url = URL(string: SupabaseConfig.urlString) ?? URL(string: "https://example.supabase.co")!
+        guard let url = URL(string: SupabaseConfig.urlString),
+              let host = url.host,
+              !host.isEmpty else {
+            preconditionFailure(
+                "SUPABASE_URL is missing or invalid. In Secrets.xcconfig use https:/$()/YOUR_PROJECT.supabase.co (// alone is treated as a comment)."
+            )
+        }
         return SupabaseClient(supabaseURL: url, supabaseKey: SupabaseConfig.anonKey)
     }()
 }

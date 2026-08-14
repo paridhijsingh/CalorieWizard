@@ -146,11 +146,12 @@ Everyday end users of a future App Store build would **not** manage keys themsel
    ```
    GEMINI_API_KEY = your_gemini_key_here
    USDA_API_KEY =                    # leave blank unless you need USDA
-   SUPABASE_URL = https://YOUR_PROJECT.supabase.co
+   SUPABASE_URL = https:/$()/YOUR_PROJECT.supabase.co
    SUPABASE_ANON_KEY = your_anon_key_here
    ```
    - Gemini: [Google AI Studio](https://aistudio.google.com/)
-   - Supabase: Project Settings → API → Project URL + `anon` `public` key
+   - Supabase: Project Settings → API → Project URL + `anon` / publishable key
+   - **xcconfig tip:** write `https:/$()/…` not `https://…` — in `.xcconfig`, `//` starts a comment and would truncate the URL to `https:`
 4. In the Supabase SQL Editor, run `supabase/schema.sql` (creates tables + row-level security).
 5. In Supabase Auth settings, enable **Email** provider (confirm email optional for local testing).
 6. Open `CalorieWizard.xcodeproj`, select your team under **Signing & Capabilities**, then build and run.
