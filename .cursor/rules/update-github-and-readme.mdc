@@ -1,0 +1,43 @@
+---
+description: After feature work, update README and push CalorieWizard changes to GitHub
+alwaysApply: true
+---
+
+# Keep GitHub + README in Sync
+
+When you finish implementing a feature, bugfix, or meaningful UI/flow change in CalorieWizard, do not stop at local code only.
+
+## After completing work
+
+1. **Update `README.md`** to match the product:
+   - Features section (what users can do)
+   - App flow (if navigation/onboarding changed)
+   - Project structure (if files were added/renamed)
+   - Roadmap / Changelog (`Current` checkboxes + clear next ideas)
+2. **Commit** relevant source + README (never commit secrets):
+   - Keep `Config/Secrets.xcconfig` gitignored
+   - Do not commit real Gemini/USDA API keys
+3. **Push** to `origin/main` for https://github.com/paridhijsingh/CalorieWizard
+
+## Commit / push checklist
+
+```bash
+git status
+git diff
+# stage code + README only (Secrets.xcconfig must stay untracked)
+git add README.md CalorieWizard/ Config/Debug.xcconfig Config/Release.xcconfig Config/Secrets.xcconfig.example
+git commit -m "Describe why the change exists."
+git push -u origin HEAD
+```
+
+## README update examples
+
+- Added water reminders → document interval/range/sound controls under **Water** and check a changelog item
+- Added hub menu → document under **Landing & Onboarding** and refresh **App Flow**
+- New Swift file → add it under **Project Structure**
+
+## Do not
+
+- Push `Config/Secrets.xcconfig` or hardcoded API keys
+- Leave README describing old tab-only navigation if the hub menu is current
+- Ask the user whether to update README/GitHub for completed features — do it as part of finishing the task (unless they explicitly say not to push)
