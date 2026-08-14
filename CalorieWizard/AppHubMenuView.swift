@@ -101,11 +101,11 @@ struct AppHubMenuView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                Image(systemName: "wand.and.stars")
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(
-                        LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
+                Image("CalorieWizardMark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 36, height: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
                 Text("CalorieWizard")
                     .font(.title2.weight(.bold))
             }

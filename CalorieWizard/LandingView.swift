@@ -21,39 +21,15 @@ struct LandingView: View {
                 Spacer()
 
                 VStack(spacing: 22) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.purple.opacity(colorScheme == .dark ? 0.45 : 0.22),
-                                        Color.indigo.opacity(colorScheme == .dark ? 0.28 : 0.12)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 148, height: 148)
-                            .scaleEffect(logoPulse ? 1.08 : 0.94)
-                            .opacity(logoPulse ? 0.95 : 0.55)
-
-                        Image(systemName: "wand.and.stars")
-                            .font(.system(size: 58, weight: .semibold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.purple, .indigo],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .scaleEffect(logoPulse ? 1.08 : 0.94)
-                            .opacity(logoPulse ? 1 : 0.62)
-                    }
-                    .accessibilityHidden(true)
-
-                    Text("CalorieWizard")
-                        .font(.largeTitle.weight(.bold))
-                        .foregroundStyle(.primary)
+                    Image("CalorieWizardLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 220, height: 220)
+                        .clipShape(RoundedRectangle(cornerRadius: 48, style: .continuous))
+                        .shadow(color: Color.purple.opacity(colorScheme == .dark ? 0.45 : 0.28), radius: 18, y: 10)
+                        .scaleEffect(logoPulse ? 1.03 : 0.97)
+                        .opacity(logoPulse ? 1 : 0.88)
+                        .accessibilityLabel("CalorieWizard logo")
 
                     Text("Snap, Track, and Transform")
                         .font(.title3.weight(.medium))

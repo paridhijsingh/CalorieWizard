@@ -11,6 +11,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 
 ### Landing & Onboarding
 - Animated CalorieWizard logo with scale/opacity pulse
+- Custom purple CW brand mark on landing + home-screen App Icon
 - Tagline: **Snap, Track, and Transform**
 - **Get Started** → email/password auth (Supabase), then profile or hub
 - **Aesthetic Explore menu hub** after auth (expand/collapse destinations)
