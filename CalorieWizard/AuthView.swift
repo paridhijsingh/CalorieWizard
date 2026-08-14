@@ -26,7 +26,7 @@ struct AuthView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(isSignUp ? "Create your account" : "Welcome back")
                             .font(.largeTitle.weight(.bold))
-                        Text("Each family member signs in on their own device. Your meals and water stay private to your account.")
+                        Text("Create an account to sync your meals, water, and goals privately across your devices.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -88,7 +88,7 @@ struct AuthView: View {
                     }
                     .disabled(!canSubmit || isLoading)
 
-                    Text("After signup, each family member can create their own Supabase account and sync privately.")
+                    Text("Anyone can sign up. Each account only sees its own data.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

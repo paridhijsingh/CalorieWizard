@@ -22,7 +22,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 - **Returning users**: signed-in session restores profile from Supabase; Get Started goes to the hub menu
 - **New users**: profile setup for first name, last name, email, and optional phone
 - **Skip for now** on profile setup to jump to the hub menu
-- **Family multi-user**: each person signs in on their own device; RLS keeps data private per account
+- **Multi-user accounts**: each person signs in on their own device; RLS keeps data private per account
 
 ### Today Dashboard
 - Calories consumed vs goal for **Today / Week / Month / Year**
@@ -126,7 +126,7 @@ Config/
 - Xcode 16+ (tested with newer Xcode / iOS 26 SDK)
 - iOS Simulator or device (camera permission for live meal photos)
 - Notifications permission (optional, for water + calorie-limit reminders)
-- A free [Supabase](https://supabase.com) project (for multi-device / family sync)
+- A free [Supabase](https://supabase.com) project (for auth + cloud sync across devices)
 
 ### Do you need API keys?
 
@@ -189,7 +189,7 @@ Keep this section updated as features land. For day-by-day build notes (bugs, le
 
 ### Current
 - [x] Animated landing + Get Started
-- [x] Supabase email auth for multi-user / family devices
+- [x] Supabase email auth for multi-user accounts and per-user private data
 - [x] Cloud sync for profile, meals, water, and favorite recipes (RLS per user)
 - [x] Profile row created on sign-in/sign-up so Table Editor is populated immediately
 - [x] Profile save / skip for returning & new users

@@ -75,13 +75,13 @@ Daily notes for features shipped, bugs hit, and learnings — raw material for b
 - Backend choice matters less than **auth session reality**: “user exists” ≠ “API calls are authorized”
 - Config formats have traps — xcconfig `//` is a classic footgun for HTTPS URLs
 - Silent `try?` is fine for demos, terrible for debugging sync
+- Early testers can install via USB + Xcode for free (TestFlight needs paid Apple Developer)
 - Brand work is product work: once the logo color was locked, the UI finally felt intentional
-- For family testing without App Store: free path is USB + Xcode (TestFlight needs paid Apple Developer)
 
 ### Post hooks (draft angles)
 1. **“My URL was literally `https:`”** — the xcconfig comment bug that crashed Supabase on launch
 2. **“Auth Users had me, Table Editor didn’t”** — why empty tables don’t mean your schema is wrong
-3. **“I turned off email confirmation on purpose”** — shipping a family app vs production auth defaults
+3. **“I turned off email confirmation on purpose”** — starter-project auth defaults vs production
 4. **From SF Symbol wand → custom CW mark** — matching an iOS UI to a logo palette
 5. **Flashcard navigation for an app hub** — swipe between features instead of only a menu list
 
@@ -90,7 +90,7 @@ Daily notes for features shipped, bugs hit, and learnings — raw material for b
 
 ### Draft LinkedIn post (optional starter)
 
-> Built multi-user sync for my iOS calorie app today with Supabase.
+> Built multi-user sync for my iOS calorie app today with Supabase — so anyone can create an account and keep their data private.
 >
 > Funniest bug: the app crashed because my config file treated `https://` as a comment, so the URL became `https:`.
 >
@@ -98,7 +98,7 @@ Daily notes for features shipped, bugs hit, and learnings — raw material for b
 >
 > Also shipped a custom logo, matched the whole UI to it, and added swipeable “flashcard” navigation between features.
 >
-> Building in public — next up: pulling cloud history onto a fresh device.
+> Building in public — starting with a few early testers, then wider access. Next up: pulling cloud history onto a fresh device.
 
 ---
 
