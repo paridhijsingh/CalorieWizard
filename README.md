@@ -13,9 +13,10 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 - Animated CalorieWizard logo with scale/opacity pulse
 - Tagline: **Snap, Track, and Transform**
 - **Get Started** continues into the app
-- **Returning users**: saved profile stays in place; Get Started goes to the dashboard
+- **Aesthetic Explore menu hub** after Get Started (expand/collapse destinations)
+- **Returning users**: saved profile stays in place; Get Started goes to the hub menu
 - **New users**: profile setup for first name, last name, email, and optional phone
-- **Skip for now** on profile setup to jump straight to the dashboard
+- **Skip for now** on profile setup to jump to the hub menu
 
 ### Today Dashboard
 - Calories consumed vs goal for **Today / Week / Month / Year**
@@ -39,7 +40,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 ### Water
 - Log water with quick add (100 ml / glass / bottle) or a custom slider
 - Daily hydration goal with progress ring
-- Water drink reminders (every 1–4 hours, 8 AM–10 PM)
+- Water drink reminders with sliders for interval (10 min–3 hrs), active time range, and sound (Default / Silent / Alert)
 - Reminder log for water schedule updates and calorie-limit alerts
 
 ### History
@@ -69,20 +70,21 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 
 ```
 CalorieWizard/
-├── CalorieWizardApp.swift      # App entry + landing/profile flow
+├── CalorieWizardApp.swift      # App entry + landing/profile → hub flow
 ├── LandingView.swift           # Animated welcome screen
+├── AppHubMenuView.swift        # Aesthetic expand/collapse destination menu
 ├── ProfileSetupView.swift      # Save or Skip for now
-├── MainTabView.swift           # Today / Analyze / Recipes / Water / History / Profile
+├── MainTabView.swift           # Legacy tab shell (optional)
 ├── DashboardView.swift         # Period goals + charts
 ├── FoodScannerView.swift       # Gemini meal photo analysis
 ├── RecipeGeneratorView.swift   # Recipe Wizard + Favorites
-├── WaterTrackerView.swift      # Hydration logging + reminder log
+├── WaterTrackerView.swift      # Hydration logging + reminder controls
 ├── HistoryView.swift           # Meal log
 ├── ProfileView.swift           # Profile, goals, notification toggles
 ├── ContentView.swift           # Shared models, parser, macro ring helpers
 ├── FavoriteRecipe.swift        # Saved recipes + recipe JSON payload
 ├── HydrationModels.swift       # WaterEntry + ReminderEvent
-├── NotificationManager.swift   # Local water & calorie-limit alerts
+├── NotificationManager.swift   # Local water & calorie-limit alerts + sounds
 ├── ImagePicker.swift           # Camera bridge
 ├── UserProfileStore.swift      # AppStorage keys
 ├── APIKeys.swift               # Reads GEMINI/USDA from env + Info.plist
@@ -147,10 +149,11 @@ Optional Xcode scheme override: **Product → Scheme → Edit Scheme → Run →
 ```
 Landing (every launch)
    └─ Get Started
-        ├─ Existing profile → Dashboard tabs
+        ├─ Existing profile → Aesthetic hub menu
         └─ New user → Profile Setup
-             ├─ Save & Continue → Dashboard
-             └─ Skip for now → Dashboard
+             ├─ Save & Continue → Hub menu
+             └─ Skip for now → Hub menu
+                  └─ Choose Dashboard / Analyze / Recipes / Water / History / Profile
 ```
 
 ## Roadmap / Changelog
@@ -170,13 +173,16 @@ Keep this section updated as features land.
 - [x] Favorites tab inside Recipes
 - [x] Dashboard week / month / year goals with calorie & macro charts
 - [x] Profile daily goal slider with smart suggestions
-- [x] Water tracker tab with daily logging
-- [x] Water drink reminders + calorie limit alerts with reminder log
+- [x] Water tracker with daily logging
+- [x] Water reminders (interval + time-range sliders, sound options)
+- [x] Calorie limit alerts with reminder log
+- [x] Aesthetic expand/collapse hub menu after Get Started
 
 ### Next ideas
 - [ ] Cuisine / flavor chip filters on Recipe Wizard
 - [ ] Barcode / USDA packaged food lookup
 - [ ] Share meal or recipe summary cards
+
 ## Privacy
 
 - Meal photos and history are stored on-device

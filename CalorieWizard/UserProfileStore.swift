@@ -18,7 +18,10 @@ enum UserProfileKey {
     static let dailyFatGoal = "dailyFatGoal"
     static let dailyWaterGoalMl = "dailyWaterGoalMl"
     static let waterRemindersEnabled = "waterRemindersEnabled"
-    static let waterReminderIntervalHours = "waterReminderIntervalHours"
+    static let waterReminderIntervalMinutes = "waterReminderIntervalMinutes"
+    static let waterReminderStartHour = "waterReminderStartHour"
+    static let waterReminderEndHour = "waterReminderEndHour"
+    static let reminderSoundOption = "reminderSoundOption"
     static let calorieLimitRemindersEnabled = "calorieLimitRemindersEnabled"
     static let lastCalorieLimitNotifyDay = "lastCalorieLimitNotifyDay"
 }

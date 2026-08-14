@@ -41,22 +41,22 @@ struct RootContainerView: View {
                 .sheet(isPresented: $showProfileSetup) {
                     ProfileSetupView(
                         onComplete: {
-                            enterDashboard(fromProfileSheet: true)
+                            enterHub(fromProfileSheet: true)
                         },
                         onSkip: {
-                            enterDashboard(fromProfileSheet: true)
+                            enterHub(fromProfileSheet: true)
                         }
                     )
                     .interactiveDismissDisabled(false)
                 }
             } else {
-                WizardMainTabView()
+                AppHubMenuView()
             }
         }
         .animation(.spring(response: 0.52, dampingFraction: 0.78), value: hasLaunched)
     }
 
-    private func enterDashboard(fromProfileSheet: Bool) {
+    private func enterHub(fromProfileSheet: Bool) {
         if fromProfileSheet {
             showProfileSetup = false
         }

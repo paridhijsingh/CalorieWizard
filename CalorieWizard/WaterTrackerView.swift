@@ -12,13 +12,21 @@ struct WaterTrackerView: View {
 
     @AppStorage(UserProfileKey.dailyWaterGoalMl) private var dailyWaterGoalMl = 2000.0
     @AppStorage(UserProfileKey.waterRemindersEnabled) private var waterRemindersEnabled = true
-    @AppStorage(UserProfileKey.waterReminderIntervalHours) private var waterReminderIntervalHours = 2
+    @AppStorage(UserProfileKey.waterReminderIntervalMinutes) private var waterReminderIntervalMinutes = 60.0
+    @AppStorage(UserProfileKey.waterReminderStartHour) private var waterReminderStartHour = 8.0
+    @AppStorage(UserProfileKey.waterReminderEndHour) private var waterReminderEndHour = 22.0
+    @AppStorage(UserProfileKey.reminderSoundOption) private var reminderSoundRaw = ReminderSoundOption.default.rawValue
 
     @Query(sort: \WaterEntry.createdAt, order: .reverse) private var allWater: [WaterEntry]
     @Query(sort: \ReminderEvent.createdAt, order: .reverse) private var reminderEvents: [ReminderEvent]
 
     @State private var customAmount: Double = 250
     @State private var permissionMessage: String?
+
+    private var reminderSound: ReminderSoundOption {
+        get { ReminderSoundOption(rawValue: reminderSoundRaw) ?? .default }
+        nonmutating set { reminderSoundRaw = newValue.rawValue }
+    }
 
     private var todayEntries: [WaterEntry] {
         allWater.filter { Calendar.current.isDateInToday($0.createdAt) }
@@ -35,6 +43,15 @@ struct WaterTrackerView: View {
 
     private var glasses: Int {
         Int((todayTotal / 250.0).rounded())
+    }
+
+    private var scheduledCount: Int {
+        NotificationManager.reminderSlots(
+            startHour: Int(waterReminderStartHour.rounded()),
+            endHour: Int(max(waterReminderEndHour, waterReminderStartHour).rounded()),
+            intervalMinutes: Int(waterReminderIntervalMinutes.rounded()),
+            limit: 60
+        ).count
     }
 
     var body: some View {
@@ -54,12 +71,24 @@ struct WaterTrackerView: View {
             .background(Color(.systemGroupedBackground).ignoresSafeArea())
             .navigationTitle("Water")
             .task {
+                normalizeRange()
                 await refreshWaterSchedule(logEvent: false)
             }
-            .onChange(of: waterRemindersEnabled) {
+            .onChange(of: waterRemindersEnabled) { _, _ in
                 Task { await refreshWaterSchedule(logEvent: true) }
             }
-            .onChange(of: waterReminderIntervalHours) {
+            .onChange(of: waterReminderIntervalMinutes) { _, _ in
+                Task { await refreshWaterSchedule(logEvent: true) }
+            }
+            .onChange(of: waterReminderStartHour) { _, _ in
+                normalizeRange()
+                Task { await refreshWaterSchedule(logEvent: true) }
+            }
+            .onChange(of: waterReminderEndHour) { _, _ in
+                normalizeRange()
+                Task { await refreshWaterSchedule(logEvent: true) }
+            }
+            .onChange(of: reminderSoundRaw) { _, _ in
                 Task { await refreshWaterSchedule(logEvent: true) }
             }
         }
@@ -166,7 +195,7 @@ struct WaterTrackerView: View {
     }
 
     private var reminderSettingsCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 14) {
             Text("Reminders")
                 .font(.headline)
 
@@ -174,9 +203,86 @@ struct WaterTrackerView: View {
                 .tint(.cyan)
 
             if waterRemindersEnabled {
-                Stepper(value: $waterReminderIntervalHours, in: 1...4) {
-                    Text("Every \(waterReminderIntervalHours) hour\(waterReminderIntervalHours == 1 ? "" : "s") (8 AM–10 PM)")
-                        .font(.subheadline)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Remind every")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text(NotificationManager.intervalLabel(Int(waterReminderIntervalMinutes.rounded())))
+                            .font(.subheadline.monospacedDigit().weight(.semibold))
+                            .foregroundStyle(.cyan)
+                    }
+                    Slider(value: $waterReminderIntervalMinutes, in: 10...180, step: 10)
+                        .tint(.cyan)
+                    Text("From 10 minutes up to 3 hours")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Active from")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text(NotificationManager.hourLabel(Int(waterReminderStartHour.rounded())))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.cyan)
+                    }
+                    Slider(value: $waterReminderStartHour, in: 0...23, step: 1)
+                    .tint(.cyan)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Active until")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Text(NotificationManager.hourLabel(Int(waterReminderEndHour.rounded())))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.cyan)
+                    }
+                    Slider(value: $waterReminderEndHour, in: 0...23, step: 1)
+                    .tint(.cyan)
+                }
+
+                Text("\(scheduledCount) reminder\(scheduledCount == 1 ? "" : "s") scheduled daily in this window.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Notification sound")
+                        .font(.subheadline.weight(.semibold))
+
+                    ForEach(ReminderSoundOption.allCases) { option in
+                        Button {
+                            reminderSound = option
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: soundSymbol(for: option))
+                                    .foregroundStyle(.cyan)
+                                    .frame(width: 22)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(option.title)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.primary)
+                                    Text(option.detail)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if reminderSound == option {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(.cyan)
+                                }
+                            }
+                            .padding(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(reminderSound == option ? Color.cyan.opacity(0.12) : Color(.tertiarySystemFill))
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
 
@@ -274,6 +380,20 @@ struct WaterTrackerView: View {
         .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
+    private func soundSymbol(for option: ReminderSoundOption) -> String {
+        switch option {
+        case .default: "speaker.wave.2.fill"
+        case .silent: "speaker.slash.fill"
+        case .alert: "bell.and.waves.left.and.right.fill"
+        }
+    }
+
+    private func normalizeRange() {
+        if waterReminderEndHour < waterReminderStartHour {
+            waterReminderEndHour = waterReminderStartHour
+        }
+    }
+
     private func addWater(_ amount: Double) {
         let entry = WaterEntry(amountMl: amount)
         modelContext.insert(entry)
@@ -291,18 +411,21 @@ struct WaterTrackerView: View {
         }
         await NotificationManager.shared.scheduleWaterReminders(
             enabled: waterRemindersEnabled,
-            intervalHours: waterReminderIntervalHours,
+            intervalMinutes: Int(waterReminderIntervalMinutes.rounded()),
+            startHour: Int(waterReminderStartHour.rounded()),
+            endHour: Int(waterReminderEndHour.rounded()),
+            sound: reminderSound,
             modelContext: modelContext,
             logScheduleEvent: logEvent
         )
     }
 }
 
-/// Watches today's calorie total and fires a one-per-day limit notification.
 struct CalorieLimitMonitor: ViewModifier {
     @Environment(\.modelContext) private var modelContext
     @AppStorage(UserProfileKey.dailyCalorieGoal) private var dailyCalorieGoal = 2000.0
     @AppStorage(UserProfileKey.calorieLimitRemindersEnabled) private var calorieLimitRemindersEnabled = true
+    @AppStorage(UserProfileKey.reminderSoundOption) private var reminderSoundRaw = ReminderSoundOption.default.rawValue
     @Query(sort: \MealEntry.createdAt, order: .reverse) private var meals: [MealEntry]
 
     private var todayCalories: Double {
@@ -315,9 +438,11 @@ struct CalorieLimitMonitor: ViewModifier {
         content
             .task(id: todayCalories) {
                 guard calorieLimitRemindersEnabled else { return }
+                let sound = ReminderSoundOption(rawValue: reminderSoundRaw) ?? .default
                 await NotificationManager.shared.notifyCalorieLimitIfNeeded(
                     consumed: todayCalories,
                     goal: dailyCalorieGoal > 0 ? dailyCalorieGoal : 2000,
+                    sound: sound,
                     modelContext: modelContext
                 )
             }
