@@ -14,7 +14,7 @@ struct LandingView: View {
 
     var body: some View {
         ZStack {
-            landingBackground
+            BrandTheme.aura(for: colorScheme)
                 .ignoresSafeArea()
 
             VStack(spacing: 28) {
@@ -26,9 +26,13 @@ struct LandingView: View {
                         .scaledToFit()
                         .frame(width: 220, height: 220)
                         .clipShape(RoundedRectangle(cornerRadius: 48, style: .continuous))
-                        .shadow(color: Color.purple.opacity(colorScheme == .dark ? 0.45 : 0.28), radius: 18, y: 10)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 48, style: .continuous)
+                                .stroke(BrandTheme.plum.opacity(0.22), lineWidth: 1)
+                        }
+                        .shadow(color: BrandTheme.plum.opacity(colorScheme == .dark ? 0.55 : 0.28), radius: 18, y: 10)
                         .scaleEffect(logoPulse ? 1.03 : 0.97)
-                        .opacity(logoPulse ? 1 : 0.88)
+                        .opacity(logoPulse ? 1 : 0.9)
                         .accessibilityLabel("CalorieWizard logo")
 
                     Text("Snap, Track, and Transform")
@@ -51,14 +55,10 @@ struct LandingView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 17)
                     .background(
-                        LinearGradient(
-                            colors: [Color.purple, Color.indigo],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
+                        BrandTheme.primaryGradient(for: colorScheme),
                         in: RoundedRectangle(cornerRadius: 16, style: .continuous)
                     )
-                    .shadow(color: Color.purple.opacity(colorScheme == .dark ? 0.5 : 0.35), radius: 16, y: 8)
+                    .shadow(color: BrandTheme.plum.opacity(colorScheme == .dark ? 0.5 : 0.32), radius: 16, y: 8)
                 }
                 .buttonStyle(LandingCTAButtonStyle())
                 .padding(.horizontal, 22)
@@ -70,34 +70,6 @@ struct LandingView: View {
             withAnimation(.easeInOut(duration: 1.25).repeatForever(autoreverses: true)) {
                 logoPulse = true
             }
-        }
-    }
-
-    private var landingBackground: some View {
-        ZStack {
-            Color(.systemBackground)
-
-            LinearGradient(
-                colors: [
-                    Color.purple.opacity(colorScheme == .dark ? 0.32 : 0.14),
-                    Color(.systemBackground),
-                    Color.indigo.opacity(colorScheme == .dark ? 0.22 : 0.10)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(Color.purple.opacity(colorScheme == .dark ? 0.28 : 0.16))
-                .blur(radius: 90)
-                .frame(width: 260, height: 260)
-                .offset(x: -120, y: -220)
-
-            Circle()
-                .fill(Color.indigo.opacity(colorScheme == .dark ? 0.24 : 0.12))
-                .blur(radius: 90)
-                .frame(width: 240, height: 240)
-                .offset(x: 140, y: 180)
         }
     }
 }

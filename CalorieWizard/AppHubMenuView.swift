@@ -48,14 +48,15 @@ enum AppDestination: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// Harmonious plum-family accents so rows match the logo (not a rainbow).
     var colors: [Color] {
         switch self {
-        case .today: [.purple, .indigo]
-        case .analyze: [.indigo, .blue]
-        case .recipes: [.pink, .purple]
-        case .water: [.cyan, .blue]
-        case .history: [.orange, .pink]
-        case .profile: [.mint, .teal]
+        case .today: [BrandTheme.plum, BrandTheme.plumDeep]
+        case .analyze: [BrandTheme.plumDeep, BrandTheme.plum]
+        case .recipes: [BrandTheme.plumSoft, BrandTheme.plum]
+        case .water: [BrandTheme.plum, BrandTheme.plumSoft]
+        case .history: [BrandTheme.plumDeep, BrandTheme.plumSoft]
+        case .profile: [BrandTheme.plumSoft, BrandTheme.plumDeep]
         }
     }
 }
@@ -69,7 +70,7 @@ struct AppHubMenuView: View {
 
     var body: some View {
         ZStack {
-            hubBackground
+            BrandTheme.aura(for: colorScheme)
                 .ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
@@ -100,14 +101,21 @@ struct AppHubMenuView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
+            HStack(spacing: 12) {
                 Image("CalorieWizardMark")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 36, height: 36)
-                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(BrandTheme.plum.opacity(0.35), lineWidth: 1)
+                    }
+                    .shadow(color: BrandTheme.plum.opacity(0.25), radius: 8, y: 3)
+
                 Text("CalorieWizard")
                     .font(.title2.weight(.bold))
+                    .foregroundStyle(colorScheme == .dark ? .white : BrandTheme.plumDeep)
             }
 
             Text(greeting)
@@ -131,13 +139,7 @@ struct AppHubMenuView: View {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [.purple.opacity(0.9), .indigo.opacity(0.85)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(BrandTheme.primaryGradient(for: colorScheme))
                             .frame(width: 48, height: 48)
                         Image(systemName: "line.3.horizontal.decrease")
                             .font(.headline.weight(.bold))
@@ -187,23 +189,13 @@ struct AppHubMenuView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .background(BrandTheme.cardFill(for: colorScheme), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            Color.purple.opacity(colorScheme == .dark ? 0.45 : 0.25),
-                            Color.indigo.opacity(0.15),
-                            Color.white.opacity(colorScheme == .dark ? 0.08 : 0.4)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+                .stroke(BrandTheme.plum.opacity(colorScheme == .dark ? 0.35 : 0.18), lineWidth: 1)
         }
-        .shadow(color: Color.purple.opacity(colorScheme == .dark ? 0.28 : 0.12), radius: 24, y: 12)
+        .shadow(color: BrandTheme.plum.opacity(colorScheme == .dark ? 0.28 : 0.12), radius: 24, y: 12)
     }
 
     private func menuRow(_ destination: AppDestination) -> some View {
@@ -212,7 +204,7 @@ struct AppHubMenuView: View {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: destination.colors.map { $0.opacity(colorScheme == .dark ? 0.55 : 0.9) },
+                            colors: destination.colors,
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -240,7 +232,10 @@ struct AppHubMenuView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(12)
-        .background(Color(.secondarySystemGroupedBackground).opacity(0.85), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(
+            (colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.72)),
+            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+        )
     }
 
     private var quickHint: some View {
@@ -257,39 +252,12 @@ struct AppHubMenuView: View {
         }
         return "Welcome, \(name)"
     }
-
-    private var hubBackground: some View {
-        ZStack {
-            Color(.systemBackground)
-
-            LinearGradient(
-                colors: [
-                    Color.purple.opacity(colorScheme == .dark ? 0.34 : 0.16),
-                    Color(.systemBackground),
-                    Color.indigo.opacity(colorScheme == .dark ? 0.24 : 0.12)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-
-            Circle()
-                .fill(Color.purple.opacity(colorScheme == .dark ? 0.28 : 0.14))
-                .blur(radius: 90)
-                .frame(width: 260, height: 260)
-                .offset(x: -130, y: -240)
-
-            Circle()
-                .fill(Color.cyan.opacity(colorScheme == .dark ? 0.18 : 0.1))
-                .blur(radius: 90)
-                .frame(width: 220, height: 220)
-                .offset(x: 140, y: 260)
-        }
-    }
 }
 
 private struct DestinationContainer: View {
     let destination: AppDestination
     var onBackToMenu: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -307,14 +275,15 @@ private struct DestinationContainer: View {
             Button(action: onBackToMenu) {
                 Label("Menu", systemImage: "square.grid.2x2.fill")
                     .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(colorScheme == .dark ? .white : BrandTheme.plumDeep)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(.ultraThinMaterial, in: Capsule())
                     .overlay {
                         Capsule()
-                            .stroke(Color.purple.opacity(0.25), lineWidth: 1)
+                            .stroke(BrandTheme.plum.opacity(0.28), lineWidth: 1)
                     }
-                    .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+                    .shadow(color: BrandTheme.plum.opacity(0.16), radius: 10, y: 4)
             }
             .buttonStyle(.plain)
             .padding(.top, 8)
