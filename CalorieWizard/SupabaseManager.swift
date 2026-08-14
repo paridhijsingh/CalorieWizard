@@ -52,6 +52,12 @@ enum SupabaseManager {
                 "SUPABASE_URL is missing or invalid. In Secrets.xcconfig use https:/$()/YOUR_PROJECT.supabase.co (// alone is treated as a comment)."
             )
         }
-        return SupabaseClient(supabaseURL: url, supabaseKey: SupabaseConfig.anonKey)
+        return SupabaseClient(
+            supabaseURL: url,
+            supabaseKey: SupabaseConfig.anonKey,
+            options: SupabaseClientOptions(
+                auth: .init(emitLocalSessionAsInitialSession: true)
+            )
+        )
     }()
 }

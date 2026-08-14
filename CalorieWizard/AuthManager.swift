@@ -35,19 +35,29 @@ final class AuthManager {
         isConfigured = true
         authTask?.cancel()
         authTask = Task {
-            do {
-                let session = try await SupabaseManager.client.auth.session
-                userId = session.user.id.uuidString
-                email = session.user.email
-            } catch {
-                userId = nil
-                email = nil
-            }
-
-            for await (_, session) in SupabaseManager.client.auth.authStateChanges {
+            for await (event, session) in SupabaseManager.client.auth.authStateChanges {
                 if Task.isCancelled { break }
-                userId = session?.user.id.uuidString
-                email = session?.user.email
+
+                switch event {
+                case .initialSession, .signedIn, .tokenRefreshed, .userUpdated:
+                    if let session, !session.isExpired {
+                        apply(session: session)
+                    } else if session?.isExpired == true {
+                        // Keep showing signed-out until refresh succeeds or signOut fires.
+                        userId = nil
+                        email = nil
+                    } else {
+                        userId = nil
+                        email = nil
+                    }
+                case .signedOut:
+                    userId = nil
+                    email = nil
+                default:
+                    if let session, !session.isExpired {
+                        apply(session: session)
+                    }
+                }
             }
         }
     }
