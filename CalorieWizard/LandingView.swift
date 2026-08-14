@@ -12,69 +12,56 @@ struct LandingView: View {
     @State private var logoPulse = false
 
     var body: some View {
-        GeometryReader { geo in
-            let logoWidth = min(geo.size.width * 0.78, 320)
+        ZStack {
+            BrandTheme.plum
+                .ignoresSafeArea()
 
-            ZStack {
-                BrandTheme.plum
-                    .ignoresSafeArea()
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
 
-                // Soft oversized wash so the page still feels branded edge-to-edge
-                Image("CalorieWizardMark")
+                Image("CalorieWizardLogo")
                     .resizable()
+                    .renderingMode(.original)
                     .scaledToFit()
-                    .frame(width: geo.size.width * 1.35)
-                    .opacity(0.12)
-                    .blur(radius: 1)
-                    .offset(y: -geo.size.height * 0.06)
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
+                    .frame(maxWidth: 280)
+                    .padding(.horizontal, 36)
+                    .scaleEffect(logoPulse ? 1.02 : 1.0)
+                    .opacity(logoPulse ? 1 : 0.94)
+                    .accessibilityLabel("CalorieWizard")
 
-                VStack(spacing: 0) {
-                    Spacer(minLength: geo.size.height * 0.12)
+                Spacer(minLength: 0)
 
-                    Image("CalorieWizardLogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: logoWidth)
-                        .scaleEffect(logoPulse ? 1.02 : 1.0)
-                        .opacity(logoPulse ? 1 : 0.94)
-                        .shadow(color: .black.opacity(0.18), radius: 24, y: 10)
-                        .accessibilityLabel("CalorieWizard")
+                Text("Snap, Track, and Transform")
+                    .font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.white.opacity(0.92))
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 28)
+                    .padding(.bottom, 22)
 
-                    Spacer()
-
-                    Text("Snap, Track, and Transform")
-                        .font(.title3.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.white.opacity(0.92))
-                        .padding(.horizontal, 28)
-                        .padding(.bottom, 22)
-
-                    Button(action: onGetStarted) {
-                        HStack(spacing: 8) {
-                            Text("Get Started")
-                                .font(.headline)
-                            Image(systemName: "arrow.right")
-                                .font(.headline.weight(.semibold))
-                        }
-                        .foregroundStyle(BrandTheme.plumDeep)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 17)
-                        .background(
-                            Color.white.opacity(0.94),
-                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        )
-                        .shadow(color: .black.opacity(0.22), radius: 16, y: 8)
+                Button(action: onGetStarted) {
+                    HStack(spacing: 8) {
+                        Text("Get Started")
+                            .font(.headline)
+                        Image(systemName: "arrow.right")
+                            .font(.headline.weight(.semibold))
                     }
-                    .buttonStyle(LandingCTAButtonStyle())
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 36)
-                    .accessibilityHint("Continues to profile setup or your dashboard")
+                    .foregroundStyle(BrandTheme.plumDeep)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 17)
+                    .background(
+                        Color.white.opacity(0.94),
+                        in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    )
+                    .shadow(color: .black.opacity(0.22), radius: 16, y: 8)
                 }
+                .buttonStyle(LandingCTAButtonStyle())
+                .padding(.horizontal, 22)
+                .padding(.bottom, 36)
+                .accessibilityHint("Continues to profile setup or your dashboard")
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(BrandTheme.plum.ignoresSafeArea())
         .onAppear {
             withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
                 logoPulse = true
