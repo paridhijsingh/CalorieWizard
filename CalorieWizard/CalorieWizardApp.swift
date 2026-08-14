@@ -14,7 +14,7 @@ struct CalorieWizardApp: App {
         WindowGroup {
             RootContainerView()
         }
-        .modelContainer(for: MealEntry.self)
+        .modelContainer(for: [MealEntry.self, FavoriteRecipe.self, WaterEntry.self, ReminderEvent.self])
     }
 }
 

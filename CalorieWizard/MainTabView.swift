@@ -26,6 +26,11 @@ struct WizardMainTabView: View {
                     Label("Recipes", systemImage: "wand.and.stars")
                 }
 
+            WaterTrackerView()
+                .tabItem {
+                    Label("Water", systemImage: "drop.fill")
+                }
+
             HistoryView()
                 .tabItem {
                     Label("History", systemImage: "clock.arrow.circlepath")
@@ -37,10 +42,14 @@ struct WizardMainTabView: View {
                 }
         }
         .tint(.purple)
+        .calorieLimitMonitoring()
     }
 }
 
 #Preview {
     WizardMainTabView()
-        .modelContainer(for: MealEntry.self, inMemory: true)
+        .modelContainer(
+            for: [MealEntry.self, FavoriteRecipe.self, WaterEntry.self, ReminderEvent.self],
+            inMemory: true
+        )
 }

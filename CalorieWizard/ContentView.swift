@@ -275,7 +275,7 @@ struct ContentView: View {
     @State private var isAnalyzing = false
     @State private var editingMacro: MacroKind? = nil
 
-    let apiKey = "YOUR_GEMINI_API_KEY"
+    let apiKey = APIKeys.gemini
 
     var body: some View {
         NavigationStack {

@@ -8,7 +8,7 @@
 import Foundation
 
 struct USDAService {
-    private let apiKey = "YOUR_USDA_API_KEY"
+    private var apiKey: String { APIKeys.usda }
     
     func searchFood(query: String) async throws -> [USDAFoodItem] {
         let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""

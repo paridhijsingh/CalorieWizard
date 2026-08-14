@@ -1,0 +1,5 @@
+//
+// Debug.xcconfig
+//
+
+#include "Secrets.xcconfig"

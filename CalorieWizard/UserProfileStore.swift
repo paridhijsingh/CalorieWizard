@@ -13,6 +13,14 @@ enum UserProfileKey {
     static let phone = "userPhone"
     static let hasCompletedProfile = "hasCompletedProfile"
     static let dailyCalorieGoal = "dailyCalorieGoal"
+    static let dailyProteinGoal = "dailyProteinGoal"
+    static let dailyCarbsGoal = "dailyCarbsGoal"
+    static let dailyFatGoal = "dailyFatGoal"
+    static let dailyWaterGoalMl = "dailyWaterGoalMl"
+    static let waterRemindersEnabled = "waterRemindersEnabled"
+    static let waterReminderIntervalHours = "waterReminderIntervalHours"
+    static let calorieLimitRemindersEnabled = "calorieLimitRemindersEnabled"
+    static let lastCalorieLimitNotifyDay = "lastCalorieLimitNotifyDay"
 }
 
 extension UserDefaults {

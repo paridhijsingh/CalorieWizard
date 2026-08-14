@@ -28,7 +28,7 @@ struct FoodScannerView: View {
     @State private var editingMacro: MacroKind? = nil
     
     // Gemini API Configuration
-    private let apiKey = "YOUR_GEMINI_API_KEY"
+    private var apiKey: String { APIKeys.gemini }
 
     var body: some View {
         NavigationStack {
