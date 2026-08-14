@@ -185,7 +185,7 @@ Landing (every launch)
 
 ## Roadmap / Changelog
 
-Keep this section updated as features land.
+Keep this section updated as features land. For day-by-day build notes (bugs, learnings, LinkedIn/blog hooks), see [`DEVLOG.md`](./DEVLOG.md).
 
 ### Current
 - [x] Animated landing + Get Started
