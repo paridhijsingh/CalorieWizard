@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F10000000000000000000001 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F20000000000000000000001 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		73D52809302CF5B2007D6D1B /* CalorieWizard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalorieWizard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D40000000100000001 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F10000000000000000000001 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,6 +97,7 @@
 			);
 			name = CalorieWizard;
 			packageProductDependencies = (
+				F20000000000000000000001 /* Supabase */,
 			);
 			productName = CalorieWizard;
 			productReference = 73D52809302CF5B2007D6D1B /* CalorieWizard.app */;
@@ -121,6 +127,9 @@
 			);
 			mainGroup = 73D52800302CF5B2007D6D1B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F30000000000000000000001 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 73D5280A302CF5B2007D6D1B /* Products */;
 			projectDirPath = "";
@@ -363,6 +372,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F30000000000000000000001 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F20000000000000000000001 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F30000000000000000000001 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 73D52801302CF5B2007D6D1B /* Project object */;
 }

@@ -398,6 +398,9 @@ struct WaterTrackerView: View {
         let entry = WaterEntry(amountMl: amount)
         modelContext.insert(entry)
         try? modelContext.save()
+        Task {
+            try? await SupabaseSyncService.upsertWater(entry)
+        }
     }
 
     private func refreshWaterSchedule(logEvent: Bool) async {

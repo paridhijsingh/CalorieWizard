@@ -22,6 +22,7 @@ struct ProfileView: View {
     @AppStorage(UserProfileKey.dailyCarbsGoal) private var dailyCarbsGoal = 200.0
     @AppStorage(UserProfileKey.dailyFatGoal) private var dailyFatGoal = 65.0
     @AppStorage(UserProfileKey.calorieLimitRemindersEnabled) private var calorieLimitRemindersEnabled = true
+    @State private var authManager = AuthManager.shared
 
     @State private var isEditing = false
 
@@ -121,6 +122,21 @@ struct ProfileView: View {
                     Text("Notifications")
                 }
 
+                Section("Account") {
+                    LabeledContent("Signed in as", value: authManager.email ?? email.ifEmpty("—"))
+                    LabeledContent("User ID", value: authManager.userId ?? "Not signed in")
+                    Button("Sync profile to cloud") {
+                        Task { await syncProfile() }
+                    }
+                    if authManager.isSignedIn {
+                        Button("Sign out", role: .destructive) {
+                            Task {
+                                try? await authManager.signOut()
+                            }
+                        }
+                    }
+                }
+
                 Section {
                     Button("Edit profile") {
                         isEditing = true
@@ -129,9 +145,30 @@ struct ProfileView: View {
             }
             .navigationTitle("Profile")
             .sheet(isPresented: $isEditing) {
-                ProfileSetupView(onComplete: { isEditing = false })
+                ProfileSetupView(onComplete: {
+                    isEditing = false
+                    Task { await syncProfile() }
+                })
             }
+            .onChange(of: dailyCalorieGoal) { _, _ in Task { await syncProfile() } }
+            .onChange(of: dailyProteinGoal) { _, _ in Task { await syncProfile() } }
+            .onChange(of: dailyCarbsGoal) { _, _ in Task { await syncProfile() } }
+            .onChange(of: dailyFatGoal) { _, _ in Task { await syncProfile() } }
         }
+    }
+
+    private func syncProfile() async {
+        try? await SupabaseSyncService.upsertProfile(
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phone: phone,
+            dailyCalorieGoal: dailyCalorieGoal,
+            dailyProteinGoal: dailyProteinGoal,
+            dailyCarbsGoal: dailyCarbsGoal,
+            dailyFatGoal: dailyFatGoal,
+            dailyWaterGoalMl: UserDefaults.standard.object(forKey: UserProfileKey.dailyWaterGoalMl) as? Double ?? 2000
+        )
     }
 
     private var suggestionHint: String {
@@ -162,6 +199,12 @@ struct ProfileView: View {
                 .tint(color)
         }
         .padding(.vertical, 2)
+    }
+}
+
+private extension String {
+    func ifEmpty(_ fallback: String) -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallback : self
     }
 }
 

@@ -12,11 +12,12 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 ### Landing & Onboarding
 - Animated CalorieWizard logo with scale/opacity pulse
 - Tagline: **Snap, Track, and Transform**
-- **Get Started** continues into the app
-- **Aesthetic Explore menu hub** after Get Started (expand/collapse destinations)
-- **Returning users**: saved profile stays in place; Get Started goes to the hub menu
+- **Get Started** → email/password auth (Supabase), then profile or hub
+- **Aesthetic Explore menu hub** after auth (expand/collapse destinations)
+- **Returning users**: signed-in session restores profile from Supabase; Get Started goes to the hub menu
 - **New users**: profile setup for first name, last name, email, and optional phone
 - **Skip for now** on profile setup to jump to the hub menu
+- **Family multi-user**: each person signs in on their own device; RLS keeps data private per account
 
 ### Today Dashboard
 - Calories consumed vs goal for **Today / Week / Month / Year**
@@ -60,7 +61,8 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 | Area | Choice |
 |------|--------|
 | UI | SwiftUI |
-| Persistence | SwiftData (`MealEntry`) + `@AppStorage` (profile) |
+| Local persistence | SwiftData (meals, water, favorites) + `@AppStorage` (profile cache) |
+| Cloud auth & sync | Supabase Auth + Postgres (profiles, meals, water, favorites) with RLS |
 | Photos | PhotosUI + `UIImagePickerController` camera |
 | Charts | Swift Charts macro ring |
 | AI | Google Gemini (`generateContent`) — required for Analyze & Recipes when building locally |
@@ -71,6 +73,10 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 ```
 CalorieWizard/
 ├── CalorieWizardApp.swift      # App entry + landing/profile → hub flow
+├── AuthView.swift              # Email/password sign up & sign in
+├── AuthManager.swift           # Supabase Auth session state
+├── SupabaseManager.swift       # Client + SUPABASE_URL / ANON_KEY config
+├── SupabaseSyncService.swift   # Upsert profile / meals / water / favorites
 ├── LandingView.swift           # Animated welcome screen
 ├── AppHubMenuView.swift        # Aesthetic expand/collapse destination menu
 ├── ProfileSetupView.swift      # Save or Skip for now
@@ -80,7 +86,7 @@ CalorieWizard/
 ├── RecipeGeneratorView.swift   # Recipe Wizard + Favorites
 ├── WaterTrackerView.swift      # Hydration logging + reminder controls
 ├── HistoryView.swift           # Meal log
-├── ProfileView.swift           # Profile, goals, notification toggles
+├── ProfileView.swift           # Profile, goals, notification toggles, sign out
 ├── ContentView.swift           # Shared models, parser, macro ring helpers
 ├── FavoriteRecipe.swift        # Saved recipes + recipe JSON payload
 ├── HydrationModels.swift       # WaterEntry + ReminderEvent
@@ -89,6 +95,13 @@ CalorieWizard/
 ├── UserProfileStore.swift      # AppStorage keys
 ├── APIKeys.swift               # Reads GEMINI/USDA from env + Info.plist
 └── USDAService.swift           # Optional USDA helper (not required to run)
+```
+
+Supabase SQL (committed):
+
+```
+supabase/
+└── schema.sql                  # Tables + RLS policies
 ```
 
 Config (project root):
@@ -106,12 +119,14 @@ Config/
 - Xcode 16+ (tested with newer Xcode / iOS 26 SDK)
 - iOS Simulator or device (camera permission for live meal photos)
 - Notifications permission (optional, for water + calorie-limit reminders)
+- A free [Supabase](https://supabase.com) project (for multi-device / family sync)
 
 ### Do you need API keys?
 
 | Key | Who needs it? | Why |
 |-----|----------------|-----|
 | **Gemini** | Anyone who **clones or builds** this repo and wants AI features | Powers **Analyze** (meal photo recognition) and **Recipe Wizard**. Without it, the rest of the app (dashboard, water, history, profile) still works. |
+| **Supabase URL + anon key** | Anyone who wants **sign-in and cloud sync** | Email auth and syncing profile / meals / water / favorites across devices. Without them, the app can still run locally but auth will show a configuration error. |
 | **USDA** | **Optional** — mainly for contributors | `USDAService` is included for future packaged-food lookup. It is **not required** for the current app experience. |
 
 Everyday end users of a future App Store build would **not** manage keys themselves (that would be handled by the developer/backend). Keys in this repo are for **local development, cloning, and contributing**.
@@ -131,28 +146,32 @@ Everyday end users of a future App Store build would **not** manage keys themsel
    ```
    GEMINI_API_KEY = your_gemini_key_here
    USDA_API_KEY =                    # leave blank unless you need USDA
+   SUPABASE_URL = https://YOUR_PROJECT.supabase.co
+   SUPABASE_ANON_KEY = your_anon_key_here
    ```
-   Get a free Gemini key from [Google AI Studio](https://aistudio.google.com/).
-4. Open `CalorieWizard.xcodeproj`, select your team under **Signing & Capabilities**, then build and run.
+   - Gemini: [Google AI Studio](https://aistudio.google.com/)
+   - Supabase: Project Settings → API → Project URL + `anon` `public` key
+4. In the Supabase SQL Editor, run `supabase/schema.sql` (creates tables + row-level security).
+5. In Supabase Auth settings, enable **Email** provider (confirm email optional for local testing).
+6. Open `CalorieWizard.xcodeproj`, select your team under **Signing & Capabilities**, then build and run.
 
 ### How keys are loaded
 
 1. **Build-time:** `Config/Debug.xcconfig` / `Release.xcconfig` include `Secrets.xcconfig`, and values are injected into `Info.plist`.
-2. **Runtime:** `APIKeys.swift` reads process environment variables first, then Info.plist.
+2. **Runtime:** `APIKeys.swift` / `SupabaseConfig` read process environment variables first, then Info.plist.
 
 Optional Xcode scheme override: **Product → Scheme → Edit Scheme → Run → Arguments → Environment Variables**.
 
-> **Security:** Never commit `Config/Secrets.xcconfig`. Only `Secrets.xcconfig.example` belongs in git.
+> **Security:** Never commit `Config/Secrets.xcconfig`. Only `Secrets.xcconfig.example` belongs in git. Use the **anon** key in the app (safe with RLS), never the **service_role** key.
 
 ## App Flow
 
 ```
 Landing (every launch)
    └─ Get Started
-        ├─ Existing profile → Aesthetic hub menu
-        └─ New user → Profile Setup
-             ├─ Save & Continue → Hub menu
-             └─ Skip for now → Hub menu
+        ├─ Signed in → Hub (or profile setup if incomplete)
+        └─ Auth (Sign Up / Sign In via Supabase)
+             └─ Profile Setup (new) or Hub (returning)
                   └─ Choose Dashboard / Analyze / Recipes / Water / History / Profile
 ```
 
@@ -162,6 +181,8 @@ Keep this section updated as features land.
 
 ### Current
 - [x] Animated landing + Get Started
+- [x] Supabase email auth for multi-user / family devices
+- [x] Cloud sync for profile, meals, water, and favorite recipes (RLS per user)
 - [x] Profile save / skip for returning & new users
 - [x] Daily calorie dashboard (SwiftData)
 - [x] Gemini meal photo analysis + editable macros
@@ -179,14 +200,16 @@ Keep this section updated as features land.
 - [x] Aesthetic expand/collapse hub menu after Get Started
 
 ### Next ideas
+- [ ] Pull remote meals/water/favorites into SwiftData on launch
 - [ ] Cuisine / flavor chip filters on Recipe Wizard
 - [ ] Barcode / USDA packaged food lookup
 - [ ] Share meal or recipe summary cards
 
 ## Privacy
 
-- Meal photos and history are stored on-device
-- Profile fields are stored in `UserDefaults` / `@AppStorage`
+- Meal photos stay on-device (file names sync; image bytes are not uploaded yet)
+- Profile and nutrition logs sync to your Supabase project when signed in (RLS: only your `auth.uid()` rows)
+- Local cache uses SwiftData + `UserDefaults` / `@AppStorage`
 - AI requests are sent to Google Gemini when you analyze a meal or generate a recipe
 
 ## License

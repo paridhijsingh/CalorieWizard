@@ -165,6 +165,9 @@ struct RecipeGeneratorView: View {
         )
         modelContext.insert(favorite)
         try? modelContext.save()
+        Task {
+            try? await SupabaseSyncService.upsertFavorite(favorite)
+        }
         showToast("Saved to Favorites")
         selectedTab = 1
     }
@@ -182,6 +185,9 @@ struct RecipeGeneratorView: View {
         )
         modelContext.insert(entry)
         try? modelContext.save()
+        Task {
+            try? await SupabaseSyncService.upsertMeal(entry)
+        }
         showToast("Logged to Today’s tracker")
     }
 

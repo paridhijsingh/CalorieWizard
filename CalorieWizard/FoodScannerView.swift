@@ -237,10 +237,12 @@ struct FoodScannerView: View {
     private func persistCurrentMeal() {
         guard let nutrition = mealNutrition, let uiImage = inputImage else { return }
 
+        let mealToSync: MealEntry
         if let savedEntryID,
            let entry = existingEntry(id: savedEntryID) {
             entry.apply(nutrition)
             entry.mealKind = mealKind
+            mealToSync = entry
         } else {
             let id = UUID()
             let fileName = MealImageStore.save(uiImage, id: id) ?? ""
@@ -257,9 +259,13 @@ struct FoodScannerView: View {
             )
             modelContext.insert(entry)
             savedEntryID = id
+            mealToSync = entry
         }
 
         try? modelContext.save()
+        Task {
+            try? await SupabaseSyncService.upsertMeal(mealToSync)
+        }
     }
 
     private func existingEntry(id: UUID) -> MealEntry? {
