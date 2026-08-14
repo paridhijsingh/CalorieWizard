@@ -85,16 +85,26 @@ struct AppHubMenuView: View {
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 18)
             }
+            .scaleEffect(selectedDestination == nil ? 1 : 0.96)
+            .opacity(selectedDestination == nil ? 1 : 0.55)
+            .blur(radius: selectedDestination == nil ? 0 : 2)
+            .allowsHitTesting(selectedDestination == nil)
+
+            if let destination = selectedDestination {
+                DestinationContainer(destination: destination) {
+                    withAnimation(BrandTransitions.cover) {
+                        selectedDestination = nil
+                    }
+                }
+                .transition(BrandTransitions.destinationCover)
+                .zIndex(2)
+            }
         }
+        .animation(BrandTransitions.cover, value: selectedDestination)
         .calorieLimitMonitoring()
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.86)) {
                 appeared = true
-            }
-        }
-        .fullScreenCover(item: $selectedDestination) { destination in
-            DestinationContainer(destination: destination) {
-                selectedDestination = nil
             }
         }
     }
@@ -172,7 +182,9 @@ struct AppHubMenuView: View {
                 VStack(spacing: 10) {
                     ForEach(Array(AppDestination.allCases.enumerated()), id: \.element.id) { index, destination in
                         Button {
-                            selectedDestination = destination
+                            withAnimation(BrandTransitions.cover) {
+                                selectedDestination = destination
+                            }
                         } label: {
                             menuRow(destination)
                         }
@@ -258,6 +270,7 @@ private struct DestinationContainer: View {
     let destination: AppDestination
     var onBackToMenu: () -> Void
     @Environment(\.colorScheme) private var colorScheme
+    @State private var appeared = false
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
@@ -271,6 +284,8 @@ private struct DestinationContainer: View {
                 case .profile: ProfileView()
                 }
             }
+            .opacity(appeared ? 1 : 0)
+            .offset(x: appeared ? 0 : 24)
 
             Button(action: onBackToMenu) {
                 Label("Menu", systemImage: "square.grid.2x2.fill")
@@ -288,6 +303,14 @@ private struct DestinationContainer: View {
             .buttonStyle(.plain)
             .padding(.top, 8)
             .padding(.trailing, 16)
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : 0.9)
+        }
+        .background(Color(.systemBackground).ignoresSafeArea())
+        .onAppear {
+            withAnimation(BrandTransitions.cover) {
+                appeared = true
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 - Custom purple CW brand mark on landing + home-screen App Icon
 - Soft plum brand theme (`BrandTheme`) shared by landing + hub menu so UI matches the logo
 - Landing uses the logo as a full-bleed background (not a floating card)
+- Aesthetic spring transitions: landing → hub, menu → feature screens (slide + soft scale)
 - Tagline: **Snap, Track, and Transform**
 - **Get Started** → email/password auth (Supabase), then profile or hub
 - **Aesthetic Explore menu hub** after auth (expand/collapse destinations)
@@ -77,6 +78,7 @@ Snap, Track, and Transform — an iOS SwiftUI app that turns meal photos into ca
 CalorieWizard/
 ├── CalorieWizardApp.swift      # App entry + landing/profile → hub flow
 ├── BrandTheme.swift            # Logo plum palette for landing + hub
+├── BrandTransitions.swift      # Shared spring page/cover transitions
 ├── AuthView.swift              # Email/password sign up & sign in
 ├── AuthManager.swift           # Supabase Auth session state
 ├── SupabaseManager.swift       # Client + SUPABASE_URL / ANON_KEY config

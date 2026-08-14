@@ -10,6 +10,7 @@ import SwiftUI
 struct LandingView: View {
     var onGetStarted: () -> Void
     @State private var logoPulse = false
+    @State private var isExiting = false
 
     var body: some View {
         ZStack {
@@ -39,7 +40,9 @@ struct LandingView: View {
                     .padding(.horizontal, 28)
                     .padding(.bottom, 22)
 
-                Button(action: onGetStarted) {
+                Button {
+                    beginExit()
+                } label: {
                     HStack(spacing: 8) {
                         Text("Get Started")
                             .font(.headline)
@@ -61,11 +64,24 @@ struct LandingView: View {
                 .accessibilityHint("Continues to profile setup or your dashboard")
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .opacity(isExiting ? 0 : 1)
+            .scaleEffect(isExiting ? 1.05 : 1)
+            .blur(radius: isExiting ? 6 : 0)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true)) {
                 logoPulse = true
             }
+        }
+    }
+
+    private func beginExit() {
+        guard !isExiting else { return }
+        withAnimation(BrandTransitions.page) {
+            isExiting = true
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+            onGetStarted()
         }
     }
 }

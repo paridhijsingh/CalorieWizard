@@ -30,10 +30,10 @@ struct RootContainerView: View {
     @State private var authManager = AuthManager.shared
 
     var body: some View {
-        Group {
+        ZStack {
             if !hasLaunched {
                 LandingView {
-                    withAnimation(.spring(response: 0.52, dampingFraction: 0.78)) {
+                    withAnimation(BrandTransitions.page) {
                         if authManager.isSignedIn {
                             continueAfterAuth()
                         } else {
@@ -41,28 +41,42 @@ struct RootContainerView: View {
                         }
                     }
                 }
-                .sheet(isPresented: $showAuth) {
-                    AuthView {
-                        showAuth = false
-                        continueAfterAuth()
-                    }
-                }
-                .sheet(isPresented: $showProfileSetup) {
-                    ProfileSetupView(
-                        onComplete: {
-                            Task { await syncProfileToCloud() }
-                            enterHub(fromProfileSheet: true)
-                        },
-                        onSkip: {
-                            enterHub(fromProfileSheet: true)
-                        }
-                    )
-                }
+                .transition(BrandTransitions.landingExit)
+                .zIndex(1)
             } else {
                 AppHubMenuView()
+                    .transition(BrandTransitions.hubEnter)
+                    .zIndex(0)
             }
         }
-        .animation(.spring(response: 0.52, dampingFraction: 0.78), value: hasLaunched)
+        .animation(BrandTransitions.page, value: hasLaunched)
+        .sheet(isPresented: $showAuth) {
+            AuthView {
+                withAnimation(BrandTransitions.quick) {
+                    showAuth = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                    continueAfterAuth()
+                }
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
+        .sheet(isPresented: $showProfileSetup) {
+            ProfileSetupView(
+                onComplete: {
+                    Task { await syncProfileToCloud() }
+                    enterHub(fromProfileSheet: true)
+                },
+                onSkip: {
+                    enterHub(fromProfileSheet: true)
+                }
+            )
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
         .task {
             authManager.configureIfNeeded()
             if authManager.isSignedIn {
@@ -84,7 +98,7 @@ struct RootContainerView: View {
         if fromProfileSheet {
             showProfileSetup = false
         }
-        withAnimation(.spring(response: 0.52, dampingFraction: 0.78)) {
+        withAnimation(BrandTransitions.page) {
             hasLaunched = true
         }
     }
